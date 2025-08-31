@@ -1,0 +1,183 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/user_profile.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="content-section mb-4">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-auto text-center text-md-start">
+                <i class="fas fa-user-circle fa-5x text-secondary"></i>
+            </div>
+            <div class="col-md">
+                <h1 class="display-4">{{ user.username }} <span class="badge bg-secondary">{{ user.role | capitalize }}</span></h1>
+                <p class="lead text-muted">{{ user.email }}</p>
+                {% if user.bio %}<p><strong>Bio:</strong> {{ user.bio }}</p>{% endif %}
+                {% if user.expertise_areas %}<p><strong>Interests/Expertise:</strong> {{ user.expertise_areas }}</p>{% endif %}
+                {% if user.contact_preference %}<p><strong>Preferred Contact:</strong> {{ user.contact_preference }}</p>{% endif %}
+                {% if user.is_student() and user.assigned_mentor %}
+                    <p><strong>Assigned Mentor:</strong> <a href="{{ url_for('main.user_profile', username=user.assigned_mentor.username) }}">{{ user.assigned_mentor.username }}</a></p>
+                {% elif user.is_mentor() and user.students.count() > 0 %}
+                    <p><strong>Mentoring:</strong> {{ user.students.count() }} students</p>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.id != user.id %}
+                    <a href="{{ url_for('main.messages', other_user_id=user.id) }}" class="btn btn-info rounded-pill mt-3 px-4">
+                        <i class="fas fa-comment"></i> Message {{ user.username }}
+                    </a>
+                {% endif %}
+
+                {% if current_user.is_admin() and current_user.id != user.id %}
+                    <a href="{{ url_for('main.edit_user', user_id=user.id) }}" class="btn btn-secondary rounded-pill mt-3 px-4">
+                        <i class="fas fa-edit"></i> Edit User
+                    </a>
+                    <a href="{{ url_for('main.set_user_password', user_id=user.id) }}" class="btn btn-warning rounded-pill mt-3 px-4">
+                        <i class="fas fa-key"></i> Reset Password
+                    </a>
+                    <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This cannot be undone and will delete all associated data.');" class="d-inline">
+                        <button type="submit" class="btn btn-danger rounded-pill mt-3 px-4">
+                            <i class="fas fa-trash-alt"></i> Delete User
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_student() %}
+        <div class="content-section mt-5">
+            <h2 class="mb-4 text-center">Student Performance & Activity</h2>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Overall Progress</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <p class="display-5 mb-1">
+                                {{ modules_completed_count }} / {{ total_resources }}
+                            </p>
+                            <p class="lead">Resources Completed</p>
+                            {% if total_resources > 0 %}
+                                {% set resource_completion_percentage = (modules_completed_count / total_resources) * 100 %}
+                                <div class="progress" role="progressbar" aria-label="Resource Completion" aria-valuenow="{{ resource_completion_percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 25px;">
+                                    <div class="progress-bar bg-info" style="width: {{ resource_completion_percentage }}%">{{ resource_completion_percentage | round(1) }}%</div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No resources available to complete.</p>
+                            {% endif %}
+                            
+                            <h5 class="mt-4 mb-1">Quiz Score Summary:</h5>
+                            {% if quiz_scores %}
+                                {% set overall_score = 0 %}
+                                {% set overall_total = 0 %}
+                                {% for score_data in quiz_scores %}
+                                    {% set overall_score = overall_score + score_data.score %}
+                                    {% set overall_total = overall_total + score_data.total %}
+                                {% endfor %}
+
+                                {% if overall_total > 0 %}
+                                    {% set overall_percentage = (overall_score / overall_total) * 100 %}
+                                    <p class="display-5 mb-1">{{ overall_score }} / {{ overall_total }}</p>
+                                    <p class="lead">Total Quiz Points Earned</p>
+                                    <div class="progress" role="progressbar" aria-label="Overall Quiz Score" aria-valuenow="{{ overall_percentage }}" aria-valuemin="0" aria-valuemax="100" style="height: 25px;">
+                                        <div class="progress-bar bg-warning text-dark" style="width: {{ overall_percentage }}%">{{ overall_percentage | round(1) }}%</div>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No quiz attempts yet.</p>
+                                {% endif %}
+                                <a href="{{ url_for('main.student_dashboard') }}" class="btn btn-outline-primary rounded-pill mt-3"><i class="fas fa-question-circle me-2"></i> View Quizzes</a>
+                            {% else %}
+                                <p class="text-muted">No quiz attempts yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm border-secondary">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Activity Heatmap</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="heatmap-container" class="w-100 overflow-auto">
+                                {# Heatmap will be rendered by JavaScript here #}
+                            </div>
+                            <h5 class="text-center mt-3">Current Login Streak: <span class="badge bg-info">{{ login_streak }} Days</span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h3 class="mb-3 text-center">Individual Quiz Results</h3>
+                {% if quiz_scores %}
+                    <div class="list-group">
+                        {% for score_data in quiz_scores %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ score_data.quiz_title }}</h5>
+                                    <small class="text-muted">Score: {{ score_data.score }} / {{ score_data.total }} ({{ score_data.percentage | round(1) }}%)</small>
+                                </div>
+                                <a href="{{ url_for('main.view_quiz_attempt', attempt_id=loop.index0 + 1) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Details</a> {# NOTE: loop.index0 + 1 is a simple placeholder for attempt_id, you should map actual attempt.id #}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No quiz results to display yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/calendar-heatmap@1.0.0/build/calendar-heatmap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var heatmapData = {{ heatmap_data | safe }}; // Passed as JSON string
+            var currentYear = new Date().getFullYear();
+            var currentMonth = new Date().getMonth();
+            var today = new Date();
+
+            // Create a full year of dummy data for the heatmap if actual data is sparse
+            // This ensures the heatmap displays a full grid even if no activity.
+            var startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            startDate.setDate(startDate.getDate() - 364); // Go back 364 days to cover a full year
+
+            var dataMap = new Map();
+            heatmapData.forEach(item => {
+                dataMap.set(item.date, item.value);
+            });
+
+            var fullYearData = [];
+            var tempDate = new Date(startDate);
+            while (tempDate <= today) {
+                let dateString = tempDate.toISOString().slice(0, 10);
+                fullYearData.push({
+                    date: dateString,
+                    value: dataMap.get(dateString) || 0
+                });
+                tempDate.setDate(tempDate.getDate() + 1);
+            }
+            
+            // Re-map values to a scale suitable for heatmap colors
+            var mappedValues = fullYearData.map(item => ({
+                date: item.date,
+                count: Math.min(item.value, 4) // Cap activity level for color scaling (0-4)
+            }));
+
+
+            var heatmap = new CalendarHeatmap()
+                .data(mappedValues)
+                .selector('#heatmap-container')
+                .last_index(364) // Last day of the year (0 to 364 for a full year)
+                .tooltip(true)
+                .legend([0, 1, 2, 3, 4]) // Levels of activity for colors
+                .vertical_labels(false) // Horizontal only
+                .horizontal_labels(true) // Show month labels
+                .week_start(0) // Sunday
+                .colors(['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']); // GitHub-like colors
+            
+            heatmap(); // Render the heatmap
+        });
+    </script>
+{% endblock scripts %}

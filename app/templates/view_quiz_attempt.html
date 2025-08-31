@@ -1,0 +1,27 @@
+    <!-- mentor_connect_ngo_enhanced/app/templates/view_quiz_attempt.html -->
+    {% extends "base.html" %}
+    {% block content %}
+        <div class="content-section">
+            <h1 class="mb-4 text-center">Quiz Results: "{{ attempt.quiz.title }}"</h1>
+            <p class="lead text-center">Attempt by: <strong>{{ attempt.student_user.username }}</strong> on {{ attempt.attempt_date.strftime('%Y-%m-%d %H:%M') }}</p>
+            <h2 class="text-center mb-5">Your Score: <span class="badge bg-primary">{{ attempt.score }} / {{ attempt.total_questions }}</span></h2>
+
+            <div class="list-group">
+                {% for qa in questions_with_answers %}
+                    <div class="list-group-item mb-3 shadow-sm {% if qa.is_correct %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
+                        <h5 class="mb-2">{{ loop.index }}. {{ qa.question_text }}</h5>
+                        <p class="mb-1"><strong>Your Answer:</strong> {{ qa.selected_option_text | default("No Answer Provided") }}</p>
+                        {% if not qa.is_correct %}
+                            <p class="mb-1"><strong>Correct Answer:</strong> {{ qa.correct_option_text }}</p>
+                        {% endif %}
+                        <small>{% if qa.is_correct %}<i class="fas fa-check-circle text-success me-1"></i>Correct{% else %}<i class="fas fa-times-circle text-danger me-1"></i>Incorrect{% endif %}</small>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('main.student_dashboard') }}" class="btn btn-secondary rounded-pill px-4"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
+        </div>
+    {% endblock content %}
+    

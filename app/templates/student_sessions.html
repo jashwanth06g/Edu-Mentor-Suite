@@ -1,0 +1,29 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/student_sessions.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section mb-4">
+        <h1 class="mb-4">Session History for {{ student.username }}</h1>
+        <p class="lead">Mentor: <a href="{{ url_for('main.user_profile', username=student.assigned_mentor.username) }}">{{ student.assigned_mentor.username }}</a></p>
+
+        {% if not sessions %}
+            <p class="text-muted text-center">No sessions logged for {{ student.username }} yet.</p>
+        {% else %}
+            <div class="list-group">
+                {% for session in sessions %}
+                    <div class="list-group-item flex-column align-items-start mb-3 rounded shadow-sm border-info">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Session on {{ session.session_date.strftime('%Y-%m-%d %H:%M') }}</h5>
+                            <small class="text-muted">{{ session.duration_minutes }} mins</small>
+                        </div>
+                        <p class="mb-1">**Topics Discussed:** {{ session.topics_discussed }}</p>
+                        <p class="mb-1">**Progress Notes:** {{ session.progress_notes | default("No notes provided.", true) }}</p>
+                        <small class="text-muted">Logged by: {{ session.mentor.username }}</small>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('main.mentor_dashboard') }}" class="btn btn-secondary rounded-pill px-4"><i class="fas fa-arrow-left"></i> Back to Mentor Dashboard</a>
+        </div>
+    </div>
+{% endblock content %}

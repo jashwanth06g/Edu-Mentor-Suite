@@ -1,0 +1,69 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/create_edit_resource.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">{{ legend }}</legend>
+                <div class="form-group mb-3">
+                    {{ form.title.label(class="form-control-label") }}
+                    {% if form.title.errors %}
+                        {{ form.title(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.title.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.title(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.description.label(class="form-control-label") }}
+                    {% if form.description.errors %}
+                        {{ form.description(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.description(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.link_url.label(class="form-control-label") }}
+                    {% if form.link_url.errors %}
+                        {{ form.link_url(class="form-control is-invalid rounded", placeholder="e.g., https://example.com/document.pdf") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.link_url.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.link_url(class="form-control rounded", placeholder="e.g., https://example.com/document.pdf") }}
+                    {% endif %}
+                    <small class="form-text text-muted">Provide a full URL for the resource.</small>
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.category.label(class="form-control-label") }}
+                    {% if form.category.errors %}
+                        {{ form.category(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.category.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.category(class="form-control rounded", placeholder="e.g., Math, Coding, Soft Skills") }}
+                    {% endif %}
+                    <small class="form-text text-muted">Categorize the resource for easy filtering.</small>
+                </div>
+            </fieldset>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-info rounded-pill px-4") }}
+            </div>
+        </form>
+    </div>
+{% endblock content %}

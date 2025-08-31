@@ -1,0 +1,31 @@
+    <!-- mentor_connect_ngo_enhanced/app/templates/quiz_results.html -->
+    {% extends "base.html" %}
+    {% block content %}
+        <div class="content-section">
+            <h1 class="mb-4 text-center">Results for Quiz: "{{ quiz.title }}"</h1>
+            <p class="lead text-center">Created by {{ quiz.creator.username }} on {{ quiz.date_created.strftime('%Y-%m-%d') }}</p>
+
+            <h3 class="mb-3">All Attempts ({{ attempts | length }})</h3>
+            {% if not attempts %}
+                <p class="text-muted text-center">No students have attempted this quiz yet.</p>
+            {% else %}
+                <div class="list-group">
+                    {% for attempt in attempts %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center mb-2 shadow-sm border-primary">
+                            <div>
+                                <h5 class="mb-1">{{ attempt.student_user.username }}</h5>
+                                <small class="text-muted">Attempted on: {{ attempt.attempt_date.strftime('%Y-%m-%d %H:%M') }}</small>
+                                <p class="mb-0">Score: <span class="badge bg-info">{{ attempt.score }} / {{ attempt.total_questions }}</span></p>
+                            </div>
+                            <a href="{{ url_for('main.view_quiz_attempt', attempt_id=attempt.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">View Details</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('main.mentor_dashboard') }}" class="btn btn-secondary rounded-pill px-4"><i class="fas fa-arrow-left"></i> Back to Mentor Dashboard</a>
+            </div>
+        </div>
+    {% endblock content %}
+    

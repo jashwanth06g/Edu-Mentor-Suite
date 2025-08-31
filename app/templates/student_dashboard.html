@@ -1,0 +1,110 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/student_dashboard.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section text-center mb-4">
+        <h1 class="display-5 mb-3">Student Dashboard</h1>
+        <p class="lead">Welcome, {{ current_user.username }}! Here's your personalized overview.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <h2 class="mb-3">Your Mentor</h2>
+            {% if mentor %}
+                <div class="card border-success h-100 shadow">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ mentor.username }}</h5>
+                        <p class="card-text">Email: {{ mentor.email }}</p>
+                        <p class="card-text">Role: <span class="badge bg-success">{{ mentor.role | capitalize }}</span></p>
+                        {% if mentor.bio %}
+                            <p class="mt-2"><strong>Bio:</strong> {{ mentor.bio }}</p>
+                        {% endif %}
+                        {% if mentor.expertise_areas %}
+                            <p><strong>Expertise:</strong> {{ mentor.expertise_areas }}</p>
+                        {% endif %}
+                        {% if mentor.contact_preference %}
+                            <p><strong>Preferred Contact:</strong> {{ mentor.contact_preference }}</p>
+                        {% endif %}
+                        <a href="{{ url_for('main.messages', other_user_id=mentor.id) }}" class="btn btn-info rounded-pill mt-3 px-4">
+                            <i class="fas fa-comment"></i> Message My Mentor
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card border-info h-100 shadow">
+                    <div class="card-body text-center">
+                        <p class="text-muted">You currently do not have an assigned mentor. The admin will assign one soon!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6 mb-4">
+            <h2 class="mb-3">Available Quizzes</h2>
+            {% if available_quizzes %}
+                <div class="list-group">
+                    {% for quiz in available_quizzes %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ quiz.title }}</h5>
+                                <small class="text-muted">Created by {{ quiz.creator.username }} on {{ quiz.date_created.strftime('%Y-%m-%d') }}</small>
+                                {% if quiz.id in attempted_quiz_ids %}
+                                    <span class="badge bg-success ms-2">Attempted</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark ms-2">New</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if quiz.id in attempted_quiz_ids %}
+                                    {% set latest_attempt = current_user.quiz_attempts.filter_by(quiz_id=quiz.id).order_by(quiz_attempt.attempt_date.desc()).first() %}
+                                    <a href="{{ url_for('main.view_quiz_attempt', attempt_id=latest_attempt.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill">View Result</a>
+                                {% else %}
+                                    <a href="{{ url_for('main.take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary rounded-pill">Take Quiz</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No quizzes available yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <h2 class="mb-3">Recent Announcements</h2>
+            {% if announcements %}
+                {% for announcement in announcements %}
+                    <div class="card mb-3 shadow-sm border-info">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ announcement.title }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <small>Posted by {{ announcement.admin.username }} on {{ announcement.date_posted.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </h6>
+                            <p class="card-text">{{ announcement.content | truncate(150) }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No recent announcements.</p>
+            {% endif %}
+        </div>
+        <div class="col-md-6 mb-4">
+            <h2 class="mb-3">Your Recent Session Logs</h2>
+            {% if recent_sessions %}
+                {% for session in recent_sessions %}
+                    <div class="card mb-3 shadow-sm border-secondary">
+                        <div class="card-body">
+                            <h5 class="card-title">Session with {{ session.mentor_of_session.username }}</h5>
+                            <p class="card-text mb-1">Date: {{ session.session_date.strftime('%Y-%m-%d %H:%M') }} | Duration: {{ session.duration_minutes }} mins</p>
+                            <p class="card-text mb-1">Topics: {{ session.topics_discussed | truncate(100) }}</p>
+                            <p class="card-text">Notes: {{ session.progress_notes | default("No notes.", true) | truncate(100) }}</p>
+                            <a href="{{ url_for('main.user_profile', username=session.mentor_of_session.username) }}" class="btn btn-sm btn-outline-primary rounded-pill mt-2">View Mentor Profile</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No sessions logged for you yet.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,185 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/create_edit_user.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">{{ legend }}</legend>
+                <div class="form-group mb-3">
+                    {{ form.username.label(class="form-control-label") }}
+                    {% if form.username.errors %}
+                        {{ form.username(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.username.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.username(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.email.label(class="form-control-label") }}
+                    {% if form.email.errors %}
+                        {{ form.email(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.email(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.role.label(class="form-control-label") }}
+                    {% if form.role.errors %}
+                        {{ form.role(class="form-select is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.role.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.role(class="form-select rounded") }}
+                    {% endif %}
+                </div>
+                {# Mentor assignment field only visible if role is student #}
+                <div class="form-group mb-3" id="mentor-assign-group" style="display: {{ 'block' if form.role.data == 'student' else 'none' }};">
+                    {{ form.mentor_id.label(class="form-control-label") }}
+                    {% if form.mentor_id.errors %}
+                        {{ form.mentor_id(class="form-select is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.mentor_id.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.mentor_id(class="form-select rounded") }}
+                    {% endif %}
+                    <small class="form-text text-muted">Select a mentor if the user's role is 'Student'.</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    {{ form.bio.label(class="form-control-label") }}
+                    {% if form.bio.errors %}
+                        {{ form.bio(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.bio.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.bio(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.expertise_areas.label(class="form-control-label") }}
+                    {% if form.expertise_areas.errors %}
+                        {{ form.expertise_areas(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.expertise_areas.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.expertise_areas(class="form-control rounded", placeholder="e.g., Python, Mathematics, Life Skills") }}
+                    {% endif %}
+                    <small class="form-text text-muted">Comma-separated list of skills or interests.</small>
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.contact_preference.label(class="form-control-label") }}
+                    {% if form.contact_preference.errors %}
+                        {{ form.contact_preference(class="form-select is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.contact_preference.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.contact_preference(class="form-select rounded") }}
+                    {% endif %}
+                </div>
+            </fieldset>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-info rounded-pill px-4") }}
+            </div>
+        </form>
+
+        {% if legend == 'Edit User Details' %}
+        <div class="border-top pt-3">
+            <small class="text-muted d-block mb-2">
+                <a class="ml-2 btn btn-sm btn-outline-warning rounded-pill" href="{{ url_for('main.set_user_password', user_id=user.id) }}"><i class="fas fa-key"></i> Set User Password</a>
+            </small>
+
+            {# Mentor Matching Suggestions (Enhancement III.1) #}
+            {% if user.is_student() and suggested_mentors %}
+                <h5 class="mt-4">Suggested Mentors for {{ user.username }} (based on interests):</h5>
+                <ul class="list-group list-group-flush mb-3">
+                    {% for mentor in suggested_mentors %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                **{{ mentor.username }}** ({{ mentor.email }})
+                                {% if mentor.expertise_areas %}
+                                    <br><small class="text-muted">Expertise: {{ mentor.expertise_areas }}</small>
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill assign-mentor-btn" data-mentor-id="{{ mentor.id }}">Assign</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <small class="text-muted">Click "Assign" to select a suggested mentor. Remember to "Save User" above after selection.</small>
+            {% elif user.is_student() and not suggested_mentors and user.expertise_areas %}
+                <p class="text-muted mt-4">No specific mentor suggestions for {{ user.username }} based on their interests. Try adding more specific interests.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // JavaScript to toggle mentor assignment field visibility based on role
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSelect = document.getElementById('role');
+            const mentorAssignGroup = document.getElementById('mentor-assign-group');
+            const mentorIdSelect = document.getElementById('mentor_id');
+            const assignMentorButtons = document.querySelectorAll('.assign-mentor-btn');
+
+            function toggleMentorAssignGroup() {
+                if (roleSelect.value === 'student') {
+                    mentorAssignGroup.style.display = 'block';
+                } else {
+                    mentorAssignGroup.style.display = 'none';
+                    mentorIdSelect.value = ''; // Clear selection if not a student
+                }
+            }
+
+            // Initial call on page load
+            toggleMentorAssignGroup();
+
+            // Listen for changes in the role select
+            roleSelect.addEventListener('change', toggleMentorAssignGroup);
+
+            // Listen for clicks on "Assign" buttons for mentor suggestions
+            assignMentorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const mentorId = this.dataset.mentorId;
+                    mentorIdSelect.value = mentorId;
+                    flashMessage('Mentor selected! Remember to click "Save User" to apply changes.', 'success');
+                });
+            });
+
+            // Simple flash message display for JS-triggered messages
+            function flashMessage(message, category) {
+                const mainContainer = document.querySelector('main.container');
+                const alertDiv = document.createElement('div');
+                alertDiv.classList.add('alert', `alert-${category}`, 'mt-3', 'rounded');
+                alertDiv.textContent = message;
+                mainContainer.prepend(alertDiv);
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000); // Remove after 5 seconds
+            }
+        });
+    </script>
+{% endblock content %}

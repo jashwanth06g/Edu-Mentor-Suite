@@ -1,0 +1,20 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/index.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="jumbotron text-center bg-light p-5 rounded-3 mb-4">
+        <h1 class="display-4">Welcome to EduMentor Suite!</h1>
+        <p class="lead">Bridging the gap between students and dedicated mentors to foster growth and learning.</p>
+        <hr class="my-4">
+        <p>This portal helps NGOs manage their student and mentor programs efficiently.</p>
+        {% if not current_user.is_authenticated %}
+        <p class="lead">
+            <a class="btn btn-primary btn-lg me-2 rounded-pill px-4" href="{{ url_for('main.login') }}" role="button">Login</a>
+            <a class="btn btn-secondary btn-lg rounded-pill px-4" href="{{ url_for('main.register') }}" role="button">Register as a Student</a>
+        </p>
+        {% else %}
+        <p class="lead">
+            <a class="btn btn-primary btn-lg me-2 rounded-pill px-4" href="{{ url_for('main.home') }}" role="button">Go to Dashboard</a>
+        </p>
+        {% endif %}
+    </div>
+{% endblock content %}

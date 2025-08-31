@@ -1,0 +1,78 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/resources.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section mb-4">
+        <h1 class="mb-4 text-center">Learning Resources</h1>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4>Browse and Learn!</h4>
+            {% if current_user.is_mentor() or current_user.is_admin() %}
+                <a href="{{ url_for('main.create_resource') }}" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-plus-circle me-2"></i> Add New Resource
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <form method="GET" action="{{ url_for('main.view_resources') }}" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label for="categoryFilter" class="form-label mb-0">Filter by Category:</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select rounded-pill" id="categoryFilter" name="category" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        {% if not resources %}
+            <p class="text-muted text-center">No resources available yet. Check back soon!</p>
+        {% else %}
+            <div class="row">
+                {% for resource in resources %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm border-secondary">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ resource.title }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ resource.category }}</h6>
+                                <p class="card-text">{{ resource.description | truncate(150) }}</p>
+                                <div class="mt-auto"> {# Push buttons to the bottom #}
+                                    <a href="{{ resource.link_url }}" target="_blank" class="btn btn-info btn-sm rounded-pill me-2 mb-2">
+                                        <i class="fas fa-external-link-alt me-1"></i> View Resource
+                                    </a>
+                                    {% if current_user.is_student() %}
+                                        {% if resource.id in completed_resource_ids %}
+                                            <button class="btn btn-success btn-sm rounded-pill mb-2" disabled>
+                                                <i class="fas fa-check-circle me-1"></i> Completed
+                                            </button>
+                                        {% else %}
+                                            <form action="{{ url_for('main.mark_resource_complete', resource_id=resource.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-success btn-sm rounded-pill mb-2">
+                                                    <i class="fas fa-check-circle me-1"></i> Mark Complete
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if current_user.is_mentor() or current_user.is_admin() %}
+                                        <a href="{{ url_for('main.edit_resource', resource_id=resource.id) }}" class="btn btn-outline-primary btn-sm rounded-pill me-2 mb-2">Edit</a>
+                                        <form action="{{ url_for('main.delete_resource', resource_id=resource.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this resource?');" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill mb-2">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                <small>Added by {{ resource.creator.username }} on {{ resource.date_added.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}

@@ -1,0 +1,216 @@
+    <!-- mentor_connect_ngo_enhanced/app/templates/create_quiz.html -->
+    {% extends "base.html" %}
+    {% block content %}
+        <div class="content-section">
+            <h1 class="mb-4 text-center">{{ legend }}</h1>
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.title.label(class="form-label") }}
+                    {{ form.title(class="form-control") }}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control") }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <hr class="my-4">
+                <h3 class="mb-3">Questions</h3>
+                <div id="questions-container">
+                    {% for question_field in form.questions %}
+                        <div class="question-item card mb-3 shadow-sm p-3">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{ question_field.question_text.label(class="form-label") }}
+                                    {{ question_field.question_text(class="form-control") }}
+                                    {% for error in question_field.question_text.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                <div class="mb-3">
+                                    {{ question_field.question_type.label(class="form-label") }}
+                                    {{ question_field.question_type(class="form-select") }}
+                                    {% for error in question_field.question_type.errors %}
+                                        <div class="text-danger">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <h5 class="mt-4">Options</h5>
+                                <div class="options-container">
+                                    {% for option_field in question_field.options %}
+                                        <div class="option-item input-group mb-2">
+                                            {{ option_field.option_text(class="form-control", placeholder="Option Text") }}
+                                            <div class="input-group-text">
+                                                {{ option_field.is_correct(class="form-check-input mt-0") }}
+                                                <label class="form-check-label ms-2">Correct</label>
+                                            </div>
+                                            {% if question_field.options|length > 2 %}
+                                                <button type="button" class="btn btn-outline-danger remove-option-btn">Remove</button>
+                                            {% endif %}
+                                            {% for error in option_field.option_text.errors %}
+                                                <div class="text-danger w-100">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill mt-2 add-option-btn"><i class="fas fa-plus-circle me-1"></i> Add Option</button>
+                                {% for error in question_field.options.errors %}
+                                    <div class="text-danger mt-2">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-question-btn mt-3"><i class="fas fa-trash-alt me-1"></i> Remove Question</button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-secondary rounded-pill px-4 mt-3" id="add-question-btn"><i class="fas fa-plus-circle me-1"></i> Add Question</button>
+
+                <div class="mt-4">
+                    {{ form.submit(class="btn btn-success rounded-pill px-5") }}
+                </div>
+            </form>
+        </div>
+    {% endblock content %}
+
+    {% block scripts %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const questionsContainer = document.getElementById('questions-container');
+                const addQuestionBtn = document.getElementById('add-question-btn');
+
+                // Function to add a new question block
+                function addQuestion(initialOptions = 2) {
+                    const questionIndex = questionsContainer.children.length;
+                    const newQuestionHtml = `
+                        <div class="question-item card mb-3 shadow-sm p-3">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label" for="questions-${questionIndex}-question_text">Question</label>
+                                    <textarea class="form-control" id="questions-${questionIndex}-question_text" name="questions-${questionIndex}-question_text" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="questions-${questionIndex}-question_type">Question Type</label>
+                                    <select class="form-select" id="questions-${questionIndex}-question_type" name="questions-${questionIndex}-question_type" required>
+                                        <option value="multiple_choice" selected>Multiple Choice</option>
+                                    </select>
+                                </div>
+
+                                <h5 class="mt-4">Options</h5>
+                                <div class="options-container">
+                                    ${Array.from({ length: initialOptions }).map((_, optionIndex) => `
+                                        <div class="option-item input-group mb-2">
+                                            <input class="form-control" id="questions-${questionIndex}-options-${optionIndex}-option_text" name="questions-${questionIndex}-options-${optionIndex}-option_text" placeholder="Option Text" type="text" value="" required>
+                                            <div class="input-group-text">
+                                                <input class="form-check-input mt-0" id="questions-${questionIndex}-options-${optionIndex}-is_correct" name="questions-${questionIndex}-options-${optionIndex}-is_correct" type="checkbox" value="y">
+                                                <label class="form-check-label ms-2" for="questions-${questionIndex}-options-${optionIndex}-is_correct">Correct</label>
+                                            </div>
+                                            ${initialOptions > 2 ? '<button type="button" class="btn btn-outline-danger remove-option-btn">Remove</button>' : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill mt-2 add-option-btn"><i class="fas fa-plus-circle me-1"></i> Add Option</button>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-question-btn mt-3"><i class="fas fa-trash-alt me-1"></i> Remove Question</button>
+                        </div>
+                    `;
+                    questionsContainer.insertAdjacentHTML('beforeend', newQuestionHtml);
+                    updateNamesAndIds();
+                }
+
+                // Function to add a new option block to a specific question
+                function addOption(questionItem) {
+                    const optionsContainer = questionItem.querySelector('.options-container');
+                    const questionIndex = Array.from(questionsContainer.children).indexOf(questionItem);
+                    const optionIndex = optionsContainer.children.length;
+                    const newOptionHtml = `
+                        <div class="option-item input-group mb-2">
+                            <input class="form-control" id="questions-${questionIndex}-options-${optionIndex}-option_text" name="questions-${questionIndex}-options-${optionIndex}-option_text" placeholder="Option Text" type="text" value="" required>
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" id="questions-${questionIndex}-options-${optionIndex}-is_correct" name="questions-${questionIndex}-options-${optionIndex}-is_correct" type="checkbox" value="y">
+                                <label class="form-check-label ms-2" for="questions-${questionIndex}-options-${optionIndex}-is_correct">Correct</label>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger remove-option-btn">Remove</button>
+                        </div>
+                    `;
+                    optionsContainer.insertAdjacentHTML('beforeend', newOptionHtml);
+                    updateNamesAndIds(); // Re-index all fields after adding/removing
+                }
+
+                // Function to update names and IDs of all fields after adding/removing elements
+                function updateNamesAndIds() {
+                    Array.from(questionsContainer.children).forEach((questionItem, qIdx) => {
+                        // Update question fields
+                        questionItem.querySelector(`[name$="-question_text"]`).name = `questions-${qIdx}-question_text`;
+                        questionItem.querySelector(`[id$="-question_text"]`).id = `questions-${qIdx}-question_text`;
+                        questionItem.querySelector(`[name$="-question_type"]`).name = `questions-${qIdx}-question_type`;
+                        questionItem.querySelector(`[id$="-question_type"]`).id = `questions-${qIdx}-question_type`;
+
+                        // Update options fields within this question
+                        Array.from(questionItem.querySelectorAll('.option-item')).forEach((optionItem, oIdx) => {
+                            optionItem.querySelector(`[name$="-option_text"]`).name = `questions-${qIdx}-options-${oIdx}-option_text`;
+                            optionItem.querySelector(`[id$="-option_text"]`).id = `questions-${qIdx}-options-${oIdx}-option_text`;
+                            optionItem.querySelector(`[name$="-is_correct"]`).name = `questions-${qIdx}-options-${oIdx}-is_correct`;
+                            optionItem.querySelector(`[id$="-is_correct"]`).id = `questions-${qIdx}-options-${oIdx}-is_correct`;
+                            optionItem.querySelector(`[for$="-is_correct"]`).setAttribute('for', `questions-${qIdx}-options-${oIdx}-is_correct`);
+
+                            // Ensure remove button is shown if more than 2 options
+                            const removeBtn = optionItem.querySelector('.remove-option-btn');
+                            if (removeBtn) {
+                                if (questionItem.querySelectorAll('.option-item').length <= 2) {
+                                    removeBtn.style.display = 'none';
+                                } else {
+                                    removeBtn.style.display = 'inline-block'; // Or 'flex' depending on layout
+                                }
+                            }
+                        });
+                    });
+
+                    // Update remove question button visibility
+                    Array.from(questionsContainer.querySelectorAll('.remove-question-btn')).forEach(btn => {
+                        if (questionsContainer.children.length <= 1) {
+                            btn.style.display = 'none';
+                        } else {
+                            btn.style.display = 'inline-block';
+                        }
+                    });
+                }
+
+                // Event Listeners
+                addQuestionBtn.addEventListener('click', () => addQuestion());
+
+                questionsContainer.addEventListener('click', (e) => {
+                    // Add Option button
+                    if (e.target.classList.contains('add-option-btn')) {
+                        const questionItem = e.target.closest('.question-item');
+                        addOption(questionItem);
+                    }
+                    // Remove Option button
+                    if (e.target.classList.contains('remove-option-btn')) {
+                        const optionItem = e.target.closest('.option-item');
+                        const optionsContainer = optionItem.parentElement;
+                        if (optionsContainer.children.length > 2) { // Ensure at least 2 options remain
+                            optionItem.remove();
+                            updateNamesAndIds();
+                        }
+                    }
+                    // Remove Question button
+                    if (e.target.classList.contains('remove-question-btn')) {
+                        const questionItem = e.target.closest('.question-item');
+                        if (questionsContainer.children.length > 1) { // Ensure at least 1 question remains
+                            questionItem.remove();
+                            updateNamesAndIds();
+                        }
+                    }
+                });
+
+                // Initial update for pre-rendered form fields on page load
+                updateNamesAndIds();
+            });
+        </script>
+    {% endblock scripts %}
+    

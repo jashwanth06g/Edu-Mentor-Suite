@@ -1,0 +1,17 @@
+<!-- app/templates/emails/announcement_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Announcement from MentorConnect</title>
+</head>
+<body>
+    <p>Hello,</p>
+    <p>A new announcement has been posted on MentorConnect:</p>
+    <h3>{{ announcement.title }}</h3>
+    <p>{{ announcement.content }}</p>
+    <p><strong>Posted by:</strong> {{ announcement.admin.username }} on {{ announcement.date_posted.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p>You can view all announcements and log in to your dashboard here: <a href="{{ url_for('main.home', _external=True) }}">MentorConnect</a></p>
+    <p>Best regards,</p>
+    <p>The MentorConnect Team</p>
+</body>
+</html>

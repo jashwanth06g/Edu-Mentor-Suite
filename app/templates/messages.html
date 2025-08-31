@@ -1,0 +1,49 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/messages.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <h1 class="mb-4">Chat with {{ other_user.username }}</h1>
+
+        <div class="card mb-4" style="height: 400px; overflow-y: auto;">
+            <div class="card-body" id="message-list">
+                {# Messages will be loaded here by JavaScript #}
+                {% if not messages %}
+                    <p class="text-muted text-center">No messages yet. Start the conversation!</p>
+                {% endif %}
+                {% for message in messages %}
+                    <div class="d-flex mb-2 {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
+                        <div class="card {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} p-2" style="max-width: 75%;">
+                            <div class="card-subtitle mb-1 {% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                <small>
+                                    {% if message.sender_id == current_user.id %}You{% else %}{{ message.sender.username }}{% endif %}
+                                    <span class="ms-2">{{ message.timestamp.strftime('%H:%M') }}</span>
+                                </small>
+                            </div>
+                            <p class="card-text mb-0">{{ message.content }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('main.messages', other_user_id=other_user.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group mb-3">
+                {{ form.content.label(class="form-control-label") }}
+                {{ form.content(class="form-control rounded") }}
+                {% if form.content.errors %}<div class="text-danger">{{ form.content.errors[0] }}</div>{% endif %}
+            </div>
+            <div class="form-group d-grid">
+                {{ form.submit(class="btn btn-outline-info rounded-pill px-4") }}
+            </div>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/messages.js') }}"></script>
+    <script>
+        // Pass necessary data to the JavaScript file
+        const otherUserId = {{ other_user.id }};
+        const currentUserId = {{ current_user.id }};
+        const fetchMessagesUrl = "{{ url_for('main.get_messages_api', other_user_id=other_user.id) }}";
+    </script>
+{% endblock content %}

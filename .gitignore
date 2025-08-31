@@ -1,0 +1,6 @@
+# mentor_connect_ngo_enhanced/.gitignore
+venv/
+__pycache__/
+*.pyc
+.env
+site.db

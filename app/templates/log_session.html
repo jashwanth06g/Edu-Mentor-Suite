@@ -1,0 +1,59 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/log_session.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">{{ legend if legend else 'Log Session' }} for {{ student.username }}</legend>
+                <div class="form-group mb-3">
+                    {{ form.student_id.label(class="form-control-label") }}
+                    {{ form.student_id(class="form-select rounded", disabled=true) }} {# Disabled because it's pre-selected #}
+                    <input type="hidden" name="student_id" value="{{ student.id }}"> {# Hidden input to actually pass the value #}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.duration_minutes.label(class="form-control-label") }}
+                    {% if form.duration_minutes.errors %}
+                        {{ form.duration_minutes(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.duration_minutes.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.duration_minutes(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.topics_discussed.label(class="form-control-label") }}
+                    {% if form.topics_discussed.errors %}
+                        {{ form.topics_discussed(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.topics_discussed.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.topics_discussed(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+                <div class="form-group mb-3">
+                    {{ form.progress_notes.label(class="form-control-label") }}
+                    {% if form.progress_notes.errors %}
+                        {{ form.progress_notes(class="form-control is-invalid rounded") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.progress_notes.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.progress_notes(class="form-control rounded") }}
+                    {% endif %}
+                </div>
+            </fieldset>
+            <div class="form-group mb-3">
+                {{ form.submit(class="btn btn-outline-success rounded-pill px-4") }}
+            </div>
+        </form>
+    </div>
+{% endblock content %}

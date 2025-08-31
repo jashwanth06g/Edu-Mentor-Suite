@@ -1,0 +1,174 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/chatbot.html -->
+{% extends "base.html" %}
+{% block content %}
+    {# Outermost container to center everything #}
+    <div class="container d-flex flex-column align-items-center justify-content-center min-vh-100 py-4">
+        {# Title and subtitle, outside the main chat box as per screenshot #}
+        <h1 class="mb-2 text-center text-primary font-weight-bold">AI Chatbot Assistant</h1>
+        <p class="lead text-center text-muted mb-4">Ask me anything related to your learning, courses, or general doubts!</p>
+
+        {# Main Chat Box - Replicating the screenshot's white rectangular box #}
+        <div class="card shadow-lg p-0 bg-white rounded" style="max-width: 800px; width: 100%; height: 75vh; max-height: 600px; display: flex; flex-direction: column; border: 1px solid #dee2e6;">
+            
+            {# Chat messages window #}
+            <div class="card-body overflow-auto flex-grow-1 p-3" id="chat-messages" style="background-color: #f8f9fa;">
+                <!-- Initial bot message - styled to match the sample. Added me-auto for explicit left alignment. -->
+                <div class="d-flex mb-2"> {# Removed justify-content-start from here #}
+                    <div class="p-3 bg-light rounded-pill border shadow-sm me-auto" style="max-width: 75%; word-break: break-word;"> 
+                        Hello! I'm your AI learning assistant. How can I help you today?
+                    </div>
+                </div>
+                {# Other messages will be appended here by JavaScript #}
+            </div>
+            
+            {# Input group for user interaction #}
+            <div class="card-footer bg-transparent border-top d-flex align-items-center p-3">
+                <input type="text" id="user-input" class="form-control rounded-pill me-2" placeholder="Type your message..." autocomplete="off">
+                <button id="send-button" class="btn btn-primary rounded-circle d-flex justify-content-center align-items-center" style="width: 45px; height: 45px;"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block scripts %}
+    {# Showdown.js for Markdown rendering - CRITICAL for AI responses #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Showdown converter for Markdown rendering
+            const converter = new showdown.Converter({
+                tables: true,
+                strikethrough: true,
+                tasklists: true,
+                simpleLineBreaks: true, // Treat newlines as <br/>
+            });
+
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+
+            function appendMessage(sender, message) {
+                const msgDiv = document.createElement('div');
+                // The parent div only needs to be a flex container. Alignment is now handled by child margins.
+                msgDiv.className = `d-flex mb-2`; 
+                
+                let messageContent;
+                let messageClasses;
+
+                if (sender === 'user') {
+                    // User message: Plain text, bg-primary, text-white, rounded-pill, border, shadow-sm, and most importantly ms-auto
+                    messageContent = message;
+                    messageClasses = 'p-3 bg-primary text-white rounded-pill border shadow-sm ms-auto'; // ms-auto for right alignment
+                } else {
+                    // Bot message: Render Markdown, bg-light, rounded-pill, border, shadow-sm, and me-auto
+                    messageContent = converter.makeHtml(message);
+                    messageClasses = 'p-3 bg-light rounded-pill border shadow-sm me-auto'; // me-auto for left alignment
+                }
+
+                // Create the inner message bubble div
+                const messageBubbleDiv = document.createElement('div');
+                messageBubbleDiv.className = messageClasses;
+                messageBubbleDiv.style.maxWidth = '75%'; // Ensure it doesn't take full width
+                messageBubbleDiv.style.wordBreak = 'break-word'; // Prevent long words from overflowing
+
+                messageBubbleDiv.innerHTML = messageContent; // Set content after classes
+
+                msgDiv.appendChild(messageBubbleDiv); // Append the bubble to the flex container
+                chatMessages.appendChild(msgDiv); // Append the flex container to the chat window
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
+            }
+
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+
+                appendMessage('user', message); // Append user's message
+                userInput.value = ''; // Clear input field
+                sendButton.disabled = true; // Disable button while AI is thinking
+
+                try {
+                    // Add typing indicator
+                    const typingIndicatorDiv = document.createElement('div');
+                    typingIndicatorDiv.id = 'typing-indicator';
+                    typingIndicatorDiv.className = 'd-flex mb-2'; // Removed justify-content-start
+                    typingIndicatorDiv.innerHTML = `
+                        <div class="p-3 bg-light rounded-pill border me-auto"> {# Added me-auto #}
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                            <span class="typing-dot"></span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(typingIndicatorDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    const response = await fetch("{{ url_for('main.chatbot_api') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    // Remove typing indicator immediately after receiving response
+                    if (typingIndicatorDiv) {
+                        typingIndicatorDiv.remove();
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    appendMessage('bot', data.response); // Append bot's response
+
+                } catch (error) {
+                    console.error('Error fetching chatbot response:', error);
+                    appendMessage('bot', 'Oops! Something went wrong. Please try again later. (' + error.message + ')');
+                    // Ensure typing indicator is removed on error as well
+                    const typingIndicatorDiv = document.getElementById('typing-indicator');
+                    if (typingIndicatorDiv) {
+                        typingIndicatorDiv.remove();
+                    }
+                } finally {
+                    sendButton.disabled = false; // Re-enable button
+                    userInput.focus(); // Focus input for next message
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                    event.preventDefault(); // Prevent default Enter key behavior
+                }
+            });
+
+            // Simple CSS for typing indicator (added here for self-containment)
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .typing-dot {
+                    display: inline-block;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #333;
+                    border-radius: 50%;
+                    margin: 0 2px;
+                    animation: bounce 0.8s infinite ease-in-out;
+                }
+                .typing-dot:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+                .typing-dot:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+                @keyframes bounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+{% endblock scripts %}

@@ -1,0 +1,143 @@
+/* mentor_connect_ngo_enhanced/app/static/css/style.css */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8f9fa; /* Light background */
+    color: #343a40; /* Darker text for readability */
+}
+
+.site-header {
+    margin-bottom: 2rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
+.content-section {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 0.75rem; /* More rounded corners */
+    margin-bottom: 2rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08); /* Softer shadow */
+}
+
+/* Forms */
+.form-control, .form-select, .btn {
+    border-radius: 0.5rem; /* Rounded form elements and buttons */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+/* Messages */
+.alert {
+    border-radius: 0.5rem;
+}
+
+/* Card styles */
+.card {
+    border-radius: 0.75rem;
+    overflow: hidden; /* Ensures content stays within rounded corners */
+}
+
+/* Table styles */
+.table {
+    border-radius: 0.75rem;
+    overflow: hidden; /* For rounded table corners */
+}
+.table thead {
+    background-color: #e9ecef;
+}
+
+/* User Profile Specifics */
+.profile-img {
+    height: 125px;
+    width: 125px;
+    margin-right: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Heatmap styles (specific for calendar-heatmap.js) */
+#heatmap-container {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.calendar-heatmap {
+    /* Ensure the SVG fits within its container */
+    max-width: 100%;
+    height: auto;
+}
+
+/* Define colors for the heatmap squares (GitHub-like) */
+/* .color-empty is default background for no activity */
+.color-scale-0 { fill: #ebedf0; } /* Lightest */
+.color-scale-1 { fill: #9be9a8; }
+.color-scale-2 { fill: #40c463; }
+.color-scale-3 { fill: #30a14e; }
+.color-scale-4 { fill: #216e39; } /* Darkest */
+
+/* Chatbot specific styles */
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+    background-color: #f0f2f5;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+}
+#chat-messages > div {
+    max-width: 70%;
+}
+.justify-content-end > div {
+    background-color: #007bff; /* Primary color for user messages */
+    color: white;
+    border: none;
+}
+.justify-content-start > div {
+    background-color: #e2e6ea; /* Light gray for bot messages */
+    color: #343a40;
+    border: 1px solid #ced4da;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-section {
+        padding: 1rem;
+    }
+    .display-5 {
+        font-size: 2.5rem;
+    }
+    .display-4 {
+        font-size: 2rem;
+    }
+    #chat-messages > div {
+        max-width: 90%;
+    }
+}

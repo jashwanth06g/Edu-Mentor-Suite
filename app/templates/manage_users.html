@@ -1,0 +1,80 @@
+<!-- mentor_connect_ngo_enhanced/app/templates/manage_users.html -->
+{% extends "base.html" %}
+{% block content %}
+    <div class="content-section mb-4">
+        <h1 class="mb-4">Manage All Users</h1>
+        <a class="btn btn-success rounded-pill px-4 mb-3" href="{{ url_for('main.create_user') }}"><i class="fas fa-user-plus"></i> Add New User</a>
+
+        <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+            <h5 class="mb-3">Search and Filter Users</h5>
+            <form method="GET" action="{{ url_for('main.manage_users') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        {{ form.search_query.label(class="form-label") }}
+                        {{ form.search_query(class="form-control rounded") }}
+                        {% if form.search_query.errors %}<div class="text-danger">{{ form.search_query.errors[0] }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.filter_role.label(class="form-label") }}
+                        {{ form.filter_role(class="form-select rounded") }}
+                        {% if form.filter_role.errors %}<div class="text-danger">{{ form.filter_role.errors[0] }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        {{ form.filter_mentor_assigned.label(class="form-label") }}
+                        {{ form.filter_mentor_assigned(class="form-select rounded") }}
+                        {% if form.filter_mentor_assigned.errors %}<div class="text-danger">{{ form.filter_mentor_assigned.errors[0] }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-2 d-grid">
+                        {{ form.submit(class="btn btn-primary rounded-pill") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+
+        {% if not users %}
+            <p class="text-muted text-center">No users found matching your criteria.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Assigned Mentor</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <th scope="row">{{ loop.index }}</th>
+                                <td><a href="{{ url_for('main.user_profile', username=user.username) }}">{{ user.username }}</a></td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="badge bg-{% if user.is_admin() %}danger{% elif user.is_mentor() %}success{% else %}primary{% endif %}">{{ user.role | capitalize }}</span></td>
+                                <td>
+                                    {% if user.is_student() and user.assigned_mentor %}
+                                        <a href="{{ url_for('main.user_profile', username=user.assigned_mentor.username) }}">{{ user.assigned_mentor.username }}</a>
+                                    {% elif user.is_student() and not user.assigned_mentor %}
+                                        <span class="text-muted">Unassigned</span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary rounded-pill me-1 mb-1" href="{{ url_for('main.edit_user', user_id=user.id) }}"><i class="fas fa-edit"></i> Edit</a>
+                                    <a class="btn btn-sm btn-outline-warning rounded-pill me-1 mb-1" href="{{ url_for('main.set_user_password', user_id=user.id) }}"><i class="fas fa-key"></i> Pass</a>
+                                    <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill mb-1" onclick="return confirm('Are you sure you want to delete {{ user.username }}? This action cannot be undone.');"><i class="fas fa-trash-alt"></i> Del</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock content %}
