@@ -38,6 +38,35 @@ EduMentor Suite is a **full-stack SaaS web application** designed as a **mentor-
 
 ---
 
+## ⚙️ Installation & Setup
+
+# Clone the repository
+git clone https://github.com/your-username/EduMentor-Suite.git
+cd EduMentor-Suite
+
+# Create and activate a virtual environment
+python -m venv venv
+
+# On Mac/Linux
+source venv/bin/activate
+
+# On Windows
+venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup PostgreSQL
+Update DB credentials in the config file.
+
+# Run the application
+flask run
+
+# Access the app in your browser
+http://127.0.0.1:5000/
+
+---
+
 ## 🎥 Working Model Demo
 
 👉 Click here to view demo
