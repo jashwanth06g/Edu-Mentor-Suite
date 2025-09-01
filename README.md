@@ -38,6 +38,12 @@ EduMentor Suite is a **full-stack SaaS web application** designed as a **mentor-
 
 ---
 
+## 🎥 Working Model Demo
+
+👉 Click here to view demo
+
+---
+
 ## 🏗️ System Architecture  
 
 ```mermaid
@@ -59,6 +65,3 @@ flowchart TD
     D --> C
 
 
-## 🎥 Working Model Demo
-
-👉 Click here to view demo
