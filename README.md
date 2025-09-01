@@ -57,3 +57,52 @@ flowchart TD
     D -->|Stores & Retrieves Data| A
     D --> B
     D --> C
+
+--
+
+##⚙️ Installation & Setup
+
+Clone the repository:
+
+git clone https://github.com/your-username/EduMentor-Suite.git
+cd EduMentor-Suite
+
+
+Create and activate a virtual environment:
+
+python -m venv venv
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
+
+
+Install dependencies:
+
+pip install -r requirements.txt
+
+
+Setup PostgreSQL and update DB credentials in the config file.
+
+Run the application:
+
+flask run
+
+
+Access the app in your browser:
+
+http://127.0.0.1:5000/
+
+📚 Future Enhancements
+
+📊 AI-driven analytics dashboards for progress insights.
+
+📱 Mobile-first Progressive Web App (PWA).
+
+🤝 Smart mentor recommendation engine.
+
+📢 Push notification system for updates & reminders.
+
+🎮 Gamified learning with badges and leaderboards.
+
+🎥 Working Model Demo
+
+👉 Click here to view demo
