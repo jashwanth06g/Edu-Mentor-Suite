@@ -69,7 +69,7 @@ http://127.0.0.1:5000/
 
 ## 🎥 Working Model Demo
 
-👉 Click here to view demo
+👉 https://drive.google.com/file/d/1CfWIacDS96yc4UdGeo7MPiqFXCnrcZ4c/view?usp=sharing
 
 ---
 
